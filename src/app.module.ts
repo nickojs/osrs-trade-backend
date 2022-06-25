@@ -8,8 +8,6 @@ import { AppService } from './app.service';
 import { UserController } from './controllers/user/user.controller';
 import db from './config/db';
 
-console.log(db);
-
 @Module({
   imports: [TypeOrmModule.forRoot(db)],
   controllers: [AppController, UserController],
