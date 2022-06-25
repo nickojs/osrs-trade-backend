@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { User } from './user.entity';
 import { UserCreationDTO } from './user.interface';
@@ -14,7 +14,13 @@ export class UserService {
       await userRepo.save(createdUser);
       return { message: 'successfuly created user ' + createdUser.username };
     } catch (error) {
-      return { message: 'couldnt create user' };
+      throw new HttpException(
+        {
+          error: 'could not create this user',
+          status: HttpStatus.BAD_REQUEST,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 }
