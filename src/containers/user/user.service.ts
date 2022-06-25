@@ -7,6 +7,27 @@ import { UserCreationDTO } from './user.interface';
 export class UserService {
   constructor(private dataSource: DataSource) {}
 
+  async findUser(userId: string) {
+    const userRepo = this.dataSource.getRepository(User);
+
+    try {
+      const findUser = await userRepo.findBy({ id: userId });
+      const { username, id } = findUser[0];
+      return {
+        username,
+        id,
+      };
+    } catch (error) {
+      throw new HttpException(
+        {
+          error,
+          status: HttpStatus.BAD_REQUEST,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
   async createUser(user: UserCreationDTO) {
     const userRepo = this.dataSource.getRepository(User);
     try {
@@ -16,7 +37,28 @@ export class UserService {
     } catch (error) {
       throw new HttpException(
         {
-          error: 'could not create this user',
+          error,
+          status: HttpStatus.BAD_REQUEST,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  async deleteUser(userId: string) {
+    const userRepo = this.dataSource.getRepository(User);
+    try {
+      console.log(userId);
+      const findUser = await userRepo.findOne({ where: { id: userId } });
+      const { username, id } = findUser;
+      return {
+        username,
+        id,
+      };
+    } catch (error) {
+      throw new HttpException(
+        {
+          error,
           status: HttpStatus.BAD_REQUEST,
         },
         HttpStatus.BAD_REQUEST,
