@@ -7,9 +7,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './containers/user/user.module';
+import { ItemsModule } from './containers/items/items.module';
 
 @Module({
-  imports: [TypeOrmModule.forRoot(db), UsersModule],
+  imports: [TypeOrmModule.forRoot(db), UsersModule, ItemsModule],
   controllers: [AppController],
   providers: [AppService],
 })
