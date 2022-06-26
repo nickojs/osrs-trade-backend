@@ -1,5 +1,5 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
 
 import { generateUrl, itemFactory } from './helpers';
@@ -11,8 +11,18 @@ export class ItemsService {
 
   async fetchItems(params: ItemQuery) {
     const url = generateUrl(params);
-    const request = await firstValueFrom(this.httpService.get(url));
-    const { items }: { items: APIItem[] } = request.data;
-    return items.map((item) => itemFactory(item));
+    try {
+      const request = await firstValueFrom(this.httpService.get(url));
+      const { items }: { items: APIItem[] } = request.data;
+      return items.map((item) => itemFactory(item));
+    } catch (error) {
+      throw new HttpException(
+        {
+          error,
+          status: HttpStatus.NOT_FOUND,
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
   }
 }
