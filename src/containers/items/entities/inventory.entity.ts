@@ -9,6 +9,9 @@ export class Inventory {
   @Column()
   itemId: number;
 
+  @Column()
+  qtd: number;
+
   @ManyToOne(() => User, (user) => user.inventory)
   user: User;
 }
