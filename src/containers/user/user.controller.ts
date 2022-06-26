@@ -8,9 +8,11 @@ import { UserService } from './user.service';
 export class UserController {
   constructor(private userService: UserService) {}
 
-  @Get(':userId')
-  findUser(@Param('userId') userId: string): Promise<Partial<UserCreationDTO>> {
-    return this.userService.findUser(userId);
+  @Get(':username')
+  async findUser(@Param('username') username: string): Promise<Partial<User>> {
+    const user = await this.userService.findUser(username);
+    const { password, ...rest } = user;
+    return { ...rest };
   }
 
   @Post()

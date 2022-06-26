@@ -7,16 +7,12 @@ import { UserCreationDTO } from './user.interface';
 export class UserService {
   constructor(private dataSource: DataSource) {}
 
-  async findUser(userId: string) {
+  async findUser(username: string) {
     const userRepo = this.dataSource.getRepository(User);
 
     try {
-      const findUser = await userRepo.findBy({ id: userId });
-      const { username, id } = findUser[0];
-      return {
-        username,
-        id,
-      };
+      const findUser = await userRepo.findOneBy({ username });
+      return { ...findUser };
     } catch (error) {
       throw new HttpException(
         {
