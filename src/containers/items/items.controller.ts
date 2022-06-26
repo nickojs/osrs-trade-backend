@@ -37,4 +37,13 @@ export class ItemsController {
   ): Promise<DefaultResponse> {
     return this.itemsService.addToInventory(item, req);
   }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/inventory/remove')
+  async removeFromInventory(
+    @Body() item: APIItem,
+    @Req() req,
+  ): Promise<DefaultResponse> {
+    return this.itemsService.removeFromInventory(item, req);
+  }
 }

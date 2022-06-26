@@ -1,6 +1,7 @@
 import { HttpService } from '@nestjs/axios';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
+import { DefaultResponse } from 'src/interfaces/request.interface';
 import { DataSource } from 'typeorm';
 import { User } from '../user/entities/user.entity';
 import { Inventory } from './entities/inventory.entity';
@@ -32,7 +33,7 @@ export class ItemsService {
     }
   }
 
-  async addToInventory(item, req): Promise<any> {
+  async addToInventory(item: APIItem, req) {
     const inventoryRepository = this.dataSource.getRepository(Inventory);
     const userRepository = this.dataSource.getRepository(User);
 
@@ -80,5 +81,42 @@ export class ItemsService {
     await inventoryRepository.save(inventoryItem);
 
     return { message: 'saved' };
+  }
+
+  async removeFromInventory(item: APIItem, req) {
+    const inventoryRepository = this.dataSource.getRepository(Inventory);
+    const userRepository = this.dataSource.getRepository(User);
+
+    const { id } = item;
+    const currentUser = req.user;
+    const findUser = await userRepository.findOne({
+      where: {
+        id: currentUser.id,
+      },
+      relations: ['inventory'],
+    });
+
+    const { inventory } = findUser;
+
+    const findItem = inventory.find((item) => item.itemId === id);
+
+    if (!findItem) {
+      throw new HttpException(
+        {
+          error: 'that item doesnt exist',
+          status: HttpStatus.BAD_REQUEST,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    if (findItem.qtd > 1) {
+      findItem.qtd--;
+      await inventoryRepository.save(findItem);
+      return { message: 'removed item qtd' };
+    }
+
+    await inventoryRepository.remove(findItem);
+    return { message: 'removed item' };
   }
 }
