@@ -15,11 +15,13 @@ export class ItemsController {
     return { categories };
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Get('/search')
   fetchItem(@Query() query: ItemQuery): Promise<APIItem[]> {
     return this.itemsService.fetchItems(query);
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Post('/inventory/add')
   addToInventory(@Body() item: APIItem): DefaultResponse {
     return { message: 'test' };
