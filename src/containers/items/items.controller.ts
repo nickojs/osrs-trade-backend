@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { DefaultResponse } from 'src/interfaces/request.interface';
 import categories from './const/category';
 import { APIItem, ItemQuery } from './items.interface';
@@ -8,6 +9,7 @@ import { ItemsService } from './items.service';
 export class ItemsController {
   constructor(private itemsService: ItemsService) {}
 
+  @UseGuards(AuthGuard('jwt'))
   @Get('/categories')
   getCategories(): Record<string, Record<number, string>> {
     return { categories };
