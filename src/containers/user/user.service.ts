@@ -12,7 +12,10 @@ export class UserService {
     const userRepo = this.dataSource.getRepository(User);
 
     try {
-      const findUser = await userRepo.findOneBy({ username });
+      const findUser = await userRepo.findOne({
+        where: { username },
+        relations: ['inventory'],
+      });
       return { ...findUser };
     } catch (error) {
       throw new HttpException(
