@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Inventory } from 'src/containers/items/entities/inventory.entity';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 
 @Entity({ name: 'OSRS_Users' })
 export class User {
@@ -13,4 +14,7 @@ export class User {
 
   @Column()
   password: string;
+
+  @OneToMany(() => Inventory, (inventory) => inventory.user)
+  inventory: Inventory[];
 }

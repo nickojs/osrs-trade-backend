@@ -1,11 +1,5 @@
 import { User } from 'src/containers/user/entities/user.entity';
-import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn,
-  OneToOne,
-  JoinColumn,
-} from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
 
 @Entity({ name: 'OSRS_Inventory' })
 export class Inventory {
@@ -15,7 +9,6 @@ export class Inventory {
   @Column()
   itemId: number;
 
-  @OneToOne(() => User)
-  @JoinColumn()
-  userId: string;
+  @ManyToOne(() => User, (user) => user.inventory)
+  user: User;
 }
