@@ -1,13 +1,6 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Post,
-  Put,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
 import { DefaultResponse } from 'src/interfaces/request.interface';
+import { User } from './user.entity';
 import { UserCreationDTO } from './user.interface';
 import { UserService } from './user.service';
 
@@ -25,14 +18,13 @@ export class UserController {
     return this.userService.createUser(userData);
   }
 
-  // @Put()
-  // updateUser(@Body() userData: Partial<UserCreationDTO>): DefaultResponse {
+  @Put()
+  updateUser(@Body() userData: Partial<User>): Promise<DefaultResponse> {
+    return this.userService.updateUser(userData);
+  }
 
-  //   return { message: 'updated user' };
-  // }
-
-  @Delete()
-  deleteUser(/* needs id */): DefaultResponse {
-    return { message: "I'm deleting users" };
+  @Post('/delete')
+  deleteUser(@Body() user: User): Promise<DefaultResponse> {
+    return this.userService.deleteUser(user);
   }
 }

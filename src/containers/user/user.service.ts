@@ -30,6 +30,7 @@ export class UserService {
 
   async createUser(user: UserCreationDTO) {
     const userRepo = this.dataSource.getRepository(User);
+
     try {
       const createdUser = userRepo.create(user);
       await userRepo.save(createdUser);
@@ -45,16 +46,34 @@ export class UserService {
     }
   }
 
-  async deleteUser(userId: string) {
+  async deleteUser(user: User) {
     const userRepo = this.dataSource.getRepository(User);
+    const { password, id } = user;
+
     try {
-      console.log(userId);
-      const findUser = await userRepo.findOne({ where: { id: userId } });
-      const { username, id } = findUser;
-      return {
-        username,
-        id,
-      };
+      const findUser = await userRepo.findOneBy({ id });
+      if (findUser.password === password) {
+        await userRepo.delete(findUser.id);
+      }
+      return { message: `deleted user` };
+    } catch (error) {
+      throw new HttpException(
+        {
+          error,
+          status: HttpStatus.BAD_REQUEST,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  async updateUser(userData: Partial<User>) {
+    const userRepo = this.dataSource.getRepository(User);
+
+    try {
+      const findUser = await userRepo.findOneBy({ id: userData.id });
+      await userRepo.update(findUser.id, userData);
+      return { message: 'successfuly updated user' };
     } catch (error) {
       throw new HttpException(
         {
