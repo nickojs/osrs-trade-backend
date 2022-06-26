@@ -1,5 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
+import { hashPw } from '../auth/helpers';
 import { User } from './entities/user.entity';
 import { UserCreationDTO } from './user.interface';
 
@@ -28,7 +29,14 @@ export class UserService {
     const userRepo = this.dataSource.getRepository(User);
 
     try {
-      const createdUser = userRepo.create(user);
+      const hashedPw = await hashPw(user.password);
+
+      const hashedUser = {
+        ...user,
+        password: hashedPw,
+      };
+
+      const createdUser = userRepo.create(hashedUser);
       await userRepo.save(createdUser);
       return { message: 'successfuly created user ' + createdUser.username };
     } catch (error) {
