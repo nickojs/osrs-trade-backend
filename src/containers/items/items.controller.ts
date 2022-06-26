@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { DefaultResponse } from 'src/interfaces/request.interface';
 import categories from './const/category';
@@ -23,7 +31,10 @@ export class ItemsController {
 
   @UseGuards(AuthGuard('jwt'))
   @Post('/inventory/add')
-  addToInventory(@Body() item: APIItem): DefaultResponse {
-    return { message: 'test' };
+  async addToInventory(
+    @Body() item: APIItem,
+    @Req() req,
+  ): Promise<DefaultResponse> {
+    return this.itemsService.addToInventory(item, req);
   }
 }
