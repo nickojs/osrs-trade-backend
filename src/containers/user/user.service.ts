@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { hashPw } from '../auth/helpers';
+import { comparePw, hashPw } from '../auth/helpers';
 import { User } from './entities/user.entity';
 import { UserCreationDTO } from './user.interface';
 
@@ -53,13 +53,25 @@ export class UserService {
     }
   }
 
-  async deleteUser(user: User) {
+  async deleteUser(body: Record<string, string>, req) {
     const userRepo = this.dataSource.getRepository(User);
-    const { password, id } = user;
+    const { userId } = req.user;
+    const { password } = body;
 
     try {
-      const findUser = await userRepo.findOneBy({ id });
-      if (findUser.password === password) {
+      const findUser = await userRepo.findOneBy({ id: userId });
+
+      if (!findUser) {
+        throw new HttpException(
+          {
+            error: 'user already deleted',
+            status: HttpStatus.NOT_FOUND,
+          },
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      if (comparePw(password, findUser.password)) {
         await userRepo.delete(findUser.id);
       }
       return { message: `deleted user` };
@@ -74,12 +86,24 @@ export class UserService {
     }
   }
 
-  async updateUser(userData: Partial<User>) {
+  async updateUser(userData: Partial<User>, req) {
     const userRepo = this.dataSource.getRepository(User);
+    const { userId } = req.user;
 
     try {
-      const findUser = await userRepo.findOneBy({ id: userData.id });
-      await userRepo.update(findUser.id, userData);
+      const findUser = await userRepo.findOneBy({ id: userId });
+      if (userData.password) {
+        const hashedPw = await hashPw(userData.password);
+
+        const hashedUser = {
+          ...findUser,
+          password: hashedPw,
+        };
+        await userRepo.update(findUser, hashedUser);
+        return { message: 'successfuly updated user' };
+      }
+
+      await userRepo.update(findUser, userData);
       return { message: 'successfuly updated user' };
     } catch (error) {
       throw new HttpException(

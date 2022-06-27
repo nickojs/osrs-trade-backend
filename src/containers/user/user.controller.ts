@@ -5,6 +5,7 @@ import {
   Param,
   Post,
   Put,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
@@ -32,13 +33,19 @@ export class UserController {
 
   @UseGuards(AuthGuard('jwt'))
   @Put()
-  updateUser(@Body() userData: Partial<User>): Promise<DefaultResponse> {
-    return this.userService.updateUser(userData);
+  updateUser(
+    @Body() userData: Partial<User>,
+    @Req() req,
+  ): Promise<DefaultResponse> {
+    return this.userService.updateUser(userData, req);
   }
 
   @UseGuards(AuthGuard('jwt'))
   @Post('/delete')
-  deleteUser(@Body() user: User): Promise<DefaultResponse> {
-    return this.userService.deleteUser(user);
+  deleteUser(
+    @Body() body: Record<string, string>,
+    @Req() req,
+  ): Promise<DefaultResponse> {
+    return this.userService.deleteUser(body, req);
   }
 }

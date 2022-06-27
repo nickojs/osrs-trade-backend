@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '../user/entities/user.entity';
 import { UserService } from '../user/user.service';
@@ -12,14 +12,24 @@ export class AuthService {
   ) {}
 
   async validateUser(username: string, pass: string): Promise<any> {
-    const user = await this.usersService.findUser(username);
-    const compareHashedPws = await comparePw(pass, user.password);
+    try {
+      const user = await this.usersService.findUser(username);
+      const compareHashedPws = await comparePw(pass, user.password);
 
-    if (user && compareHashedPws) {
-      const { password, ...rest } = user;
-      return rest;
+      if (user && compareHashedPws) {
+        const { password, ...rest } = user;
+        return rest;
+      }
+      return null;
+    } catch (error) {
+      throw new HttpException(
+        {
+          error,
+          status: HttpStatus.BAD_REQUEST,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
     }
-    return null;
   }
 
   async login(user: User) {
