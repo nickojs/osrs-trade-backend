@@ -9,26 +9,36 @@ export class AuthService {
   constructor(
     private usersService: UserService,
     private jwtService: JwtService,
-  ) {}
+  ) { }
 
   async validateUser(username: string, pass: string): Promise<any> {
-    try {
-      const user = await this.usersService.findUser(username);
-      const compareHashedPws = await comparePw(pass, user.password);
+    const user = await this.usersService.findUser(username);
 
-      if (user && compareHashedPws) {
-        const { password, ...rest } = user;
-        return rest;
-      }
-      return null;
-    } catch (error) {
+    if (Object.keys(user).length === 0) {
       throw new HttpException(
         {
-          error,
-          status: HttpStatus.BAD_REQUEST,
+          error: 'Check your credentials',
+          status: HttpStatus.UNAUTHORIZED,
         },
-        HttpStatus.BAD_REQUEST,
+        HttpStatus.UNAUTHORIZED,
       );
+    }
+
+    const compareHashedPws = await comparePw(pass, user.password);
+
+    if (!compareHashedPws) {
+      throw new HttpException(
+        {
+          error: 'Check your credentials',
+          status: HttpStatus.UNAUTHORIZED,
+        },
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
+
+    if (user && compareHashedPws) {
+      const { password, ...rest } = user;
+      return rest;
     }
   }
 
