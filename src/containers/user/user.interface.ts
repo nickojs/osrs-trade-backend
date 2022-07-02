@@ -8,3 +8,7 @@ export interface UserCreationDTO {
   username: string;
   password: string;
 }
+
+export interface SearchUser {
+  username: string;
+}

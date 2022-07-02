@@ -2,11 +2,35 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { comparePw, hashPw } from '../auth/helpers';
 import { User } from './entities/user.entity';
-import { UserCreationDTO } from './user.interface';
+import { SearchUser, UserCreationDTO } from './user.interface';
 
 @Injectable()
 export class UserService {
   constructor(private dataSource: DataSource) {}
+
+  async getUsers(query: SearchUser) {
+    try {
+      const userRepo = this.dataSource.getRepository(User);
+      const { username } = query;
+
+      const findUsers = await userRepo
+        .createQueryBuilder('user')
+        .where('user.username like :username', { username: `%${username}%` })
+        .select(['user.id', 'user.username'])
+        .limit(10)
+        .getMany();
+
+      return findUsers;
+    } catch (error) {
+      throw new HttpException(
+        {
+          error: 'couldnt fetch users',
+          status: HttpStatus.BAD_REQUEST,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
 
   async findUser(username: string) {
     const userRepo = this.dataSource.getRepository(User);

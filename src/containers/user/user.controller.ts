@@ -5,18 +5,26 @@ import {
   Param,
   Post,
   Put,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { DefaultResponse } from 'src/interfaces/request.interface';
 import { User } from './entities/user.entity';
-import { UserCreationDTO } from './user.interface';
+import { SearchUser, UserCreationDTO } from './user.interface';
 import { UserService } from './user.service';
 
 @Controller('user')
 export class UserController {
   constructor(private userService: UserService) {}
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/search')
+  async getUsers(@Query() query: SearchUser): Promise<Array<User>> {
+    const users = this.userService.getUsers(query);
+    return users;
+  }
 
   @UseGuards(AuthGuard('jwt'))
   @Get(':username')
