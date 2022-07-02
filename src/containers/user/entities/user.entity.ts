@@ -15,6 +15,9 @@ export class User {
   @Column()
   password: string;
 
+  @Column()
+  profilePicId: number;
+
   @OneToMany(() => Inventory, (inventory) => inventory.user)
   inventory: Inventory[];
 }

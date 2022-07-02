@@ -16,7 +16,7 @@ export class UserService {
       const findUsers = await userRepo
         .createQueryBuilder('user')
         .where('user.username like :username', { username: `%${username}%` })
-        .select(['user.id', 'user.username'])
+        .select(['user.id', 'user.username', 'user.profilePicId'])
         .limit(10)
         .getMany();
 
