@@ -19,8 +19,8 @@ export class ItemsController {
 
   @UseGuards(AuthGuard('jwt'))
   @Get('/categories')
-  getCategories(): Record<string, Record<number, string>> {
-    return { categories };
+  getCategories(): Array<Record<number, string>> {
+    return categories;
   }
 
   @UseGuards(AuthGuard('jwt'))
