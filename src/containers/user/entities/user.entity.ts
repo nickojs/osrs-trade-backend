@@ -18,6 +18,9 @@ export class User {
   @Column()
   profilePicId: number;
 
+  @Column()
+  status: string;
+
   @OneToMany(() => Inventory, (inventory) => inventory.user)
   inventory: Inventory[];
 }

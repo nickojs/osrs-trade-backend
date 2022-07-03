@@ -9,10 +9,11 @@ import { AppService } from './app.service';
 import { UsersModule } from './containers/user/user.module';
 import { ItemsModule } from './containers/items/items.module';
 import { AuthModule } from './containers/auth/auth.module';
+import { TradeGateway } from './trade.gateway';
 
 @Module({
   imports: [TypeOrmModule.forRoot(db), UsersModule, ItemsModule, AuthModule],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, TradeGateway],
 })
 export class AppModule {}
