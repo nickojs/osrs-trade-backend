@@ -1,4 +1,4 @@
-import { APIItem } from './containers/items/items.interface';
+import { APIItem } from 'src/containers/items/items.interface';
 
 export enum SocketEvents {
   CONNECTION = 'connection',

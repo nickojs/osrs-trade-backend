@@ -9,7 +9,7 @@ import { AppService } from './app.service';
 import { UsersModule } from './containers/user/user.module';
 import { ItemsModule } from './containers/items/items.module';
 import { AuthModule } from './containers/auth/auth.module';
-import { TradeGateway } from './trade.gateway';
+import { TradeGateway } from './gateways/trade.gateway';
 
 @Module({
   imports: [TypeOrmModule.forRoot(db), UsersModule, ItemsModule, AuthModule],
