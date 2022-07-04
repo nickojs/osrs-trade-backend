@@ -63,21 +63,6 @@ export class TradeGateway implements OnGatewayConnection, OnGatewayDisconnect {
     console.log(this.connectedUsers);
   }
 
-  @SubscribeMessage('setStatus')
-  async setUserStatus(client: Socket, payload: StatusPayload) {
-    try {
-      const userRepo = this.dataSource.getRepository(User);
-      const findUser = await userRepo.findOneBy({ id: payload.userId });
-      if (STATUS.includes(payload.status))
-        if (findUser) {
-          await userRepo.update(findUser, { status: payload.status });
-          client.emit('setStatus', 'updated status');
-        }
-    } catch (error) {
-      client.emit('error', { message: "couldn't update status", error });
-    }
-  }
-
   @SubscribeMessage('initTrade')
   async initTrade(client: Socket, payload: any) {
     try {
