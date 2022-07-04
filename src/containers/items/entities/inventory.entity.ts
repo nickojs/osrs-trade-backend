@@ -10,7 +10,13 @@ export class Inventory {
   itemId: number;
 
   @Column()
-  qtd: number;
+  iconUrl: string;
+
+  @Column()
+  description: string;
+
+  @Column()
+  name: string;
 
   @ManyToOne(() => User, (user) => user.inventory)
   user: User;

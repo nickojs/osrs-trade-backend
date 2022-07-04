@@ -6,7 +6,7 @@ import { DataSource } from 'typeorm';
 import { User } from '../user/entities/user.entity';
 import { Inventory } from './entities/inventory.entity';
 
-import { generateUrl, itemFactory } from './helpers';
+import { generateUrl, generateUrlForSingleItem, itemFactory } from './helpers';
 import { APIItem, ItemQuery } from './items.interface';
 
 @Injectable()
@@ -33,11 +33,11 @@ export class ItemsService {
     }
   }
 
-  async addToInventory(item: APIItem, req) {
+  async addToInventory(data: any, req) {
+    const { item } = data;
     const inventoryRepository = this.dataSource.getRepository(Inventory);
     const userRepository = this.dataSource.getRepository(User);
 
-    const { id } = item;
     const currentUser = req.user;
     const findUser = await userRepository.findOne({
       where: {
@@ -56,26 +56,12 @@ export class ItemsService {
       );
     }
 
-    const existingItem = findUser.inventory.find((item) => item.itemId === id);
-
-    if (existingItem) {
-      if (existingItem.qtd === 99) {
-        throw new HttpException(
-          {
-            error: "you can't carry more",
-            status: HttpStatus.BAD_REQUEST,
-          },
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-      existingItem.qtd++;
-      await inventoryRepository.save(existingItem);
-      return { message: 'updated item qtd' };
-    }
-
     const inventoryItem = new Inventory();
-    inventoryItem.itemId = id;
-    inventoryItem.qtd = 1;
+    inventoryItem.itemId = item.id;
+    inventoryItem.description = item.description;
+    inventoryItem.iconUrl = item.icon;
+    inventoryItem.name = item.name;
+
     inventoryItem.user = findUser;
 
     await inventoryRepository.save(inventoryItem);
@@ -83,11 +69,12 @@ export class ItemsService {
     return { message: 'saved' };
   }
 
-  async removeFromInventory(item: APIItem, req) {
+  async removeFromInventory(data: any, req) {
+    const { item } = data;
     const inventoryRepository = this.dataSource.getRepository(Inventory);
     const userRepository = this.dataSource.getRepository(User);
 
-    const { id } = item;
+    const { itemId } = item;
     const currentUser = req.user;
     const findUser = await userRepository.findOne({
       where: {
@@ -98,7 +85,7 @@ export class ItemsService {
 
     const { inventory } = findUser;
 
-    const findItem = inventory.find((item) => item.itemId === id);
+    const findItem = inventory.find((item) => item.itemId === itemId);
 
     if (!findItem) {
       throw new HttpException(
@@ -108,12 +95,6 @@ export class ItemsService {
         },
         HttpStatus.BAD_REQUEST,
       );
-    }
-
-    if (findItem.qtd > 1) {
-      findItem.qtd--;
-      await inventoryRepository.save(findItem);
-      return { message: 'removed item qtd' };
     }
 
     await inventoryRepository.remove(findItem);
