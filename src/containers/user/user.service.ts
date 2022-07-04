@@ -32,6 +32,26 @@ export class UserService {
     }
   }
 
+  async getFullUser(username: string) {
+    const userRepo = this.dataSource.getRepository(User);
+
+    try {
+      const findUser = await userRepo.findOne({
+        where: { username },
+      });
+
+      return { ...findUser };
+    } catch (error) {
+      throw new HttpException(
+        {
+          error,
+          status: HttpStatus.BAD_REQUEST,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
   async findUser(username: string) {
     const userRepo = this.dataSource.getRepository(User);
 
@@ -39,7 +59,9 @@ export class UserService {
       const findUser = await userRepo.findOne({
         where: { username },
         relations: ['inventory'],
+        select: ['id', 'inventory', 'username'],
       });
+
       return { ...findUser };
     } catch (error) {
       throw new HttpException(

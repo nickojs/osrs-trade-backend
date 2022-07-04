@@ -9,10 +9,10 @@ export class AuthService {
   constructor(
     private usersService: UserService,
     private jwtService: JwtService,
-  ) { }
+  ) {}
 
   async validateUser(username: string, pass: string): Promise<any> {
-    const user = await this.usersService.findUser(username);
+    const user = await this.usersService.getFullUser(username);
 
     if (Object.keys(user).length === 0) {
       throw new HttpException(
