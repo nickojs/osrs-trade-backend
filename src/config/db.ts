@@ -10,9 +10,13 @@ export default {
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   entities: [User, Inventory],
-  synchronize: process.env.NODE_ENV === 'production' ? false : true,
+  synchronize: false,
   retryAttempts: 2,
   ssl: {
     rejectUnauthorized: false,
+  },
+  migrations: ['src/config/migrations/**/*.ts'],
+  cli: {
+    migrationsDir: 'migration',
   },
 } as TypeOrmModuleOptions;

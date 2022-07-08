@@ -1,0 +1,12 @@
+version: '3'
+services:
+  db: 
+    build: './src/config'
+    restart: always
+    ports: 
+      - '5432:5432'
+
+  server:
+    build: ./
+    env_file:
+      - .env.container

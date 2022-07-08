@@ -1,73 +1,37 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# OSRS Trade (Backend)
+### DISCLAIMER!!!11!
+I'm not a full time backend developer.
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+If you're evaluating me and my code skills/decisions, please keep in mind that I just built this server because I really needed. 
+Think of this repo as a POC.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+OSRS's API needs to be proxied, and I'm also using SocketIO, so the server was a must.
 
-## Description
+>"Okay, what *should* I evaluate then?"
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
-## Installation
+[the frontend app](https://github.com/nickojs/osrs-web3-trade)
 
-```bash
-$ npm install
-```
+That app is hooked into a Heroku Dyno with everything set, so it should be ready to be tested. I also have a lot of storybook components, with MSW mocking calls. 
 
-## Running the app
+## To-do
+The following list refers to the missing features of the app so far. I'll be done with that whenever possible.
 
-```bash
-# development
-$ npm run start
+- [ ] The trade itself - it's done using a trade window, that is set when both users agrees to start the trade. 
+- [ ] Complete the "switch items" logic
+- [ ] Minors bugs/enhancements needed (P2/P3 stuff)
 
-# watch mode
-$ npm run start:dev
+## Running the server locally
+> Don't ever, for any reason, do anything, to anyone, for any reason, ever, no matter what, no matter where, or who, or who you are with, or where you are going, or where you've been, ever, for any reason whatsoever.
 
-# production mode
-$ npm run start:prod
-```
+To be honest, the current best way of running this server locally is to create a local postgresql DB, run Nest in dev mode and add the needed envs to the .env file.
 
-## Test
+But I created a not-ready-yet docker-compose file that helps with the process.
 
-```bash
-# unit tests
-$ npm run test
+The only thing is: You gotta run the `init.sql` script manually because it's not working, for [?] reason. As I said before, backend is not my main skill. Be nice.
 
-# e2e tests
-$ npm run test:e2e
+Just run `docker-compose up`, wait a bit and then get the osrs-db's container ID/name. Access its shell and run ` cd docker-entrypoint-initdb.d && psql -U postgres -f init.sql`. You can access the DB using Dbeaver or any other SQL tool to see if this worked out.
 
-# test coverage
-$ npm run test:cov
-```
 
-## Support
+Also, check the [the frontend app](https://github.com/nickojs/osrs-web3-trade)'s readme to see how to run that locally.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).
