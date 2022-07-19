@@ -1,7 +1,6 @@
 import { HttpService } from '@nestjs/axios';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
-import { DefaultResponse } from 'src/interfaces/request.interface';
 import { DataSource } from 'typeorm';
 import { User } from '../user/entities/user.entity';
 import { Inventory } from './entities/inventory.entity';
@@ -99,5 +98,41 @@ export class ItemsService {
 
     await inventoryRepository.remove(findItem);
     return { message: 'removed item' };
+  }
+
+  async refreshInventory(req) {
+    const userRepo = this.dataSource.getRepository(User);
+    const itemRepo = this.dataSource.getRepository(Inventory);
+
+    const url = (id: number) => generateUrlForSingleItem(id);
+    const currentUser = req.user as User;
+
+    try {
+      const findUser = await userRepo.findOne({
+        where: { username: currentUser.username },
+        relations: ['inventory'],
+        select: ['inventory'],
+      });
+
+      findUser.inventory.forEach(async (item) => {
+        try {
+          const request = await firstValueFrom(
+            this.httpService.get(url(item.itemId)),
+          );
+          const { item: requestItem } = request.data;
+          itemRepo.update(item, { iconUrl: requestItem.icon });
+        } catch (error) {
+          console.log('refreshInventory error: ', error);
+        }
+      });
+    } catch (error) {
+      throw new HttpException(
+        {
+          error,
+          status: HttpStatus.BAD_REQUEST,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 }

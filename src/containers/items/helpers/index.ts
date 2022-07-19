@@ -14,5 +14,5 @@ export const itemFactory = (rawItem: APIItem): APIItem => {
   };
 };
 
-export const generateUrlForSingleItem = (id: string): string =>
+export const generateUrlForSingleItem = (id: number): string =>
   `https://secure.runescape.com/m=itemdb_rs/api/catalogue/detail.json?item=${id}`;

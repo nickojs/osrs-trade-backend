@@ -30,6 +30,12 @@ export class ItemsController {
   }
 
   @UseGuards(AuthGuard('jwt'))
+  @Get('/refresh')
+  refreshInventory(@Req() req): Promise<any> {
+    return this.itemsService.refreshInventory(req);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
   @Post('/inventory/add')
   async addToInventory(
     @Body() item: APIItem,
