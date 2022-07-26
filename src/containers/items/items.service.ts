@@ -40,7 +40,7 @@ export class ItemsService {
     const currentUser = req.user;
     const findUser = await userRepository.findOne({
       where: {
-        id: currentUser.id,
+        id: currentUser.userId,
       },
       relations: ['inventory'],
     });
@@ -68,35 +68,27 @@ export class ItemsService {
     return { message: 'saved' };
   }
 
-  async removeFromInventory(data: any, req) {
+  async removeFromInventory(data: any) {
     const { item } = data;
     const inventoryRepository = this.dataSource.getRepository(Inventory);
-    const userRepository = this.dataSource.getRepository(User);
-
-    const { itemId } = item;
-    const currentUser = req.user;
-    const findUser = await userRepository.findOne({
-      where: {
-        id: currentUser.id,
-      },
-      relations: ['inventory'],
-    });
-
-    const { inventory } = findUser;
-
-    const findItem = inventory.find((item) => item.itemId === itemId);
-
-    if (!findItem) {
-      throw new HttpException(
-        {
-          error: 'that item doesnt exist',
-          status: HttpStatus.BAD_REQUEST,
-        },
-        HttpStatus.BAD_REQUEST,
-      );
+    try {
+      const findItem = await inventoryRepository.findOne({
+        where: { id: item.id },
+      });
+      await inventoryRepository.remove(findItem);
+      if (!findItem) {
+        throw new HttpException(
+          {
+            error: 'couldnt delete item',
+            status: HttpStatus.BAD_REQUEST,
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      return { message: 'removed item' };
+    } catch (error) {
+      console.log(error);
     }
-
-    await inventoryRepository.remove(findItem);
     return { message: 'removed item' };
   }
 

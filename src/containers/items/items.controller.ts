@@ -46,10 +46,7 @@ export class ItemsController {
 
   @UseGuards(AuthGuard('jwt'))
   @Post('/inventory/remove')
-  async removeFromInventory(
-    @Body() item: APIItem,
-    @Req() req,
-  ): Promise<DefaultResponse> {
-    return this.itemsService.removeFromInventory(item, req);
+  async removeFromInventory(@Body() item: APIItem): Promise<DefaultResponse> {
+    return this.itemsService.removeFromInventory(item);
   }
 }

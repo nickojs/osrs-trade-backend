@@ -33,5 +33,4 @@ export interface ConnectedUser {
   };
   acceptTrade: boolean;
   sendingItems: APIItem[];
-  receivingItems: APIItem[];
 }

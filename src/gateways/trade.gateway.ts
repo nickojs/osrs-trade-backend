@@ -5,23 +5,16 @@ import {
   OnGatewayConnection,
 } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
+import { Inventory } from 'src/containers/items/entities/inventory.entity';
+import { User } from 'src/containers/user/entities/user.entity';
 import { DataSource } from 'typeorm';
-import { User } from '../containers/user/entities/user.entity';
 import { ConnectedUser } from '../interfaces/socketModel';
 import { cleanUser, connectedUserFactory, getUser } from './helper';
-
-const STATUS = ['online', 'busy', 'away'] as const;
-type UserStatusBase = typeof STATUS;
-type UserStatus = UserStatusBase[number];
 
 type ConnectedPayload = {
   userId: string;
   username: string;
 };
-
-interface StatusPayload extends ConnectedPayload {
-  status: UserStatus;
-}
 
 @WebSocketGateway({
   cors: {
@@ -48,6 +41,12 @@ export class TradeGateway implements OnGatewayConnection, OnGatewayDisconnect {
         client.id,
       );
 
+      if (
+        createSocketUser.userId === undefined ||
+        createSocketUser.socketId === undefined
+      )
+        return; // needs to thrown an error here
+
       this.connectedUsers.push(createSocketUser);
       console.log(this.connectedUsers);
     } catch (error) {
@@ -63,7 +62,7 @@ export class TradeGateway implements OnGatewayConnection, OnGatewayDisconnect {
     console.log(this.connectedUsers);
   }
 
-  @SubscribeMessage('initTrade')
+  @SubscribeMessage('requestTrade')
   async initTrade(client: Socket, payload: any) {
     try {
       const { targetId } = payload;
@@ -73,7 +72,6 @@ export class TradeGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       const currentUser = getUser(client.id, 'socketId', this.connectedUsers);
 
-      currentUser.user.acceptTrade = true;
       currentUser.user.trading = {
         isTrading: true,
         recipientId: targetId,
@@ -81,17 +79,19 @@ export class TradeGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       this.connectedUsers.splice(currentUser.index, 1, currentUser.user);
 
-      client.to(targetUser.user.socketId).emit('initTrade', {
+      client.to(targetUser.user.socketId).emit('requestTrade', {
         message: `${currentUser.user.username} wants to trade...`,
-        data: {
-          user: {
-            userId: currentUser.user.userId,
-            socketId: currentUser.user.socketId,
-          },
-        },
       });
 
-      console.log(this.connectedUsers);
+      client.to(targetUser.user.socketId).emit('updateUser', {
+        targetUser: currentUser.user,
+        currentUser: targetUser.user,
+      });
+
+      client.emit('updateUser', {
+        targetUser: targetUser.user,
+        currentUser: currentUser.user,
+      });
     } catch (error) {
       client.emit('error', { message: 'initTrade error', error });
     }
@@ -116,8 +116,6 @@ export class TradeGateway implements OnGatewayConnection, OnGatewayDisconnect {
       client.to(targetUser.user.socketId).emit('declineTrade', {
         message: `${currentUser.user.username} declined the trade`,
       });
-
-      console.log(this.connectedUsers);
     } catch (error) {
       client.emit('error', { message: 'declineTrade error', error });
     }
@@ -132,8 +130,6 @@ export class TradeGateway implements OnGatewayConnection, OnGatewayDisconnect {
         'userId',
         this.connectedUsers,
       );
-
-      currentUser.user.acceptTrade = true;
       currentUser.user.trading = {
         isTrading: true,
         recipientId: payload.tradingId,
@@ -141,12 +137,19 @@ export class TradeGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       this.connectedUsers.splice(currentUser.index, 1, currentUser.user);
 
-      client.to(targetUser.user.socketId).emit('acceptTrade', {
-        message: `${currentUser.user.username} accepts the trade init`,
+      client.to(targetUser.user.socketId).emit('updateUser', {
+        targetUser: currentUser.user,
+        currentUser: targetUser.user,
+      });
+
+      client.emit('updateUser', {
+        targetUser: targetUser.user,
+        currentUser: currentUser.user,
       });
 
       console.log(this.connectedUsers);
     } catch (error) {
+      console.log(error);
       client.emit('error', { message: 'acceptTradeInit error', error });
     }
   }
@@ -154,38 +157,127 @@ export class TradeGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('sendItem')
   async sendItem(client: Socket, payload: any) {
     try {
-      const { items, tradingId } = payload;
+      const { item, targetId } = payload;
       const currentUser = getUser(client.id, 'socketId', this.connectedUsers);
-      const targetUser = getUser(tradingId, 'userId', this.connectedUsers);
+      const targetUser = getUser(targetId, 'userId', this.connectedUsers);
 
-      if (
-        currentUser.user.trading.isTrading &&
-        targetUser.user.trading.isTrading
-      ) {
-        currentUser.user.sendingItems = items;
-        targetUser.user.receivingItems = items;
-
+      if (currentUser.user.trading.isTrading) {
+        currentUser.user.sendingItems = [
+          ...currentUser.user.sendingItems,
+          item,
+        ];
         this.connectedUsers.splice(currentUser.index, 1, currentUser.user);
-        this.connectedUsers.splice(targetUser.index, 1, targetUser.user);
       }
       console.log(this.connectedUsers);
+
+      client.to(targetUser.user.socketId).emit('updateUser', {
+        targetUser: currentUser.user,
+        currentUser: targetUser.user,
+      });
+
+      client.emit('updateUser', {
+        targetUser: targetUser.user,
+        currentUser: currentUser.user,
+      });
     } catch (error) {
       client.emit('error', { message: 'sendItem error', error });
     }
   }
 
-  @SubscribeMessage('completeTrade')
-  async completeTrade(client: Socket, payload: any) {
+  @SubscribeMessage('removeItem')
+  async removeItem(client: Socket, payload: any) {
     try {
-      const { targetId } = payload;
+      const { item, targetId } = payload;
       const currentUser = getUser(client.id, 'socketId', this.connectedUsers);
       const targetUser = getUser(targetId, 'userId', this.connectedUsers);
 
-      // trade item logic
+      const findItemToRemove = currentUser.user.sendingItems.findIndex(
+        (i) => i.id === item.id,
+      );
 
-      console.log(this.connectedUsers);
+      if (findItemToRemove > -1) {
+        currentUser.user.sendingItems.splice(findItemToRemove, 1);
+        this.connectedUsers.splice(currentUser.index, 1, currentUser.user);
+      }
+
+      client.to(targetUser.user.socketId).emit('updateUser', {
+        targetUser: currentUser.user,
+        currentUser: targetUser.user,
+      });
+
+      client.emit('updateUser', {
+        targetUser: targetUser.user,
+        currentUser: currentUser.user,
+      });
     } catch (error) {
-      client.emit('error', { message: 'completeTrade error', error });
+      client.emit('error', { message: 'removeItem error', error });
+    }
+  }
+
+  @SubscribeMessage('acknowledgeTrade')
+  async confirmTrade(client: Socket, payload: any) {
+    const inventoryRepo = this.dataSource.getRepository(Inventory);
+    const userRepo = this.dataSource.getRepository(User);
+
+    try {
+      const { targetId } = payload;
+      const currentUser = getUser(client.id, 'socketId', this.connectedUsers);
+      const currentUserRepo = await userRepo.findOne({
+        where: { id: currentUser.user.userId },
+      });
+      const targetUser = getUser(targetId, 'userId', this.connectedUsers);
+      const targetUserRepo = await userRepo.findOne({
+        where: { id: targetUser.user.userId },
+      });
+
+      currentUser.user.acceptTrade = true;
+      this.connectedUsers.splice(currentUser.index, 1, currentUser.user);
+
+      client.to(targetUser.user.socketId).emit('updateUser', {
+        targetUser: currentUser.user,
+        currentUser: targetUser.user,
+      });
+
+      client.emit('updateUser', {
+        targetUser: targetUser.user,
+        currentUser: currentUser.user,
+      });
+
+      if (targetUser.user.acceptTrade) {
+        const targetItems = targetUser.user.sendingItems;
+        const currentItems = currentUser.user.sendingItems;
+
+        if (targetItems.length === 0 && currentItems.length === 0) return;
+
+        targetItems.forEach(async (tItem: any) => {
+          const getItem = await inventoryRepo.findOne({
+            where: { id: tItem.id },
+            relations: ['user'],
+          });
+          getItem.user = currentUserRepo;
+          await inventoryRepo.save(getItem);
+        });
+
+        currentItems.forEach(async (cItem: any) => {
+          const getItem = await inventoryRepo.findOne({
+            where: { id: cItem.id },
+            relations: ['user'],
+          });
+          getItem.user = targetUserRepo;
+          await inventoryRepo.save(getItem);
+        });
+
+        const cleanTargetUser = cleanUser(targetUser.user);
+        const cleanCurrentUser = cleanUser(currentUser.user);
+
+        this.connectedUsers.splice(targetUser.index, 1, cleanTargetUser);
+        this.connectedUsers.splice(currentUser.index, 1, cleanCurrentUser);
+
+        client.emit('completeTrade');
+        client.to(targetUser.user.socketId).emit('completeTrade');
+      }
+    } catch (error) {
+      client.emit('error', { message: 'removeItem error', error });
     }
   }
 }
