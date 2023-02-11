@@ -1,19 +1,4 @@
 # OSRS Trade (Backend)
-### DISCLAIMER!!!11!
-I'm not a full time backend developer.
-
-If you're evaluating me and my code skills/decisions, please keep in mind that I just built this server because I really needed. 
-Think of this repo as a POC.
-
-OSRS's API needs to be proxied, and I'm also using SocketIO, so the server was a must.
-
->"Okay, what *should* I evaluate then?"
-
-
-[the frontend app](https://github.com/nickojs/osrs-web3-trade)
-
-That app is hooked into a Heroku Dyno with everything set, so it should be ready to be tested. I also have a lot of storybook components, with MSW mocking calls. 
-
 ## To-do
 The following list refers to the missing features of the app so far. I'll be done with that whenever possible.
 
