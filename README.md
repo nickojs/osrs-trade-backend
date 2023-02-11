@@ -1,13 +1,4 @@
 # OSRS Trade (Backend)
-## To-do
-The following list refers to the missing features of the app so far. I'll be done with that whenever possible.
-
-- [ ] The trade itself - it's done using a trade window, that is set when both users agrees to start the trade. 
-- [ ] Complete the "switch items" logic
-- [ ] Minors bugs/enhancements
-    - [ ] Fix undefined socketId user when creating a user
-    - [ ] Fix existing responses (avoid typeorm "raw" errors)
-    - [ ] General error messages and standards
 
 ## Running the server locally
 > Don't ever, for any reason, do anything, to anyone, for any reason, ever, no matter what, no matter where, or who, or who you are with, or where you are going, or where you've been, ever, for any reason whatsoever.
